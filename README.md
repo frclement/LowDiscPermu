@@ -6,4 +6,4 @@ The file vdc_permu contains the model, that should be run in Julia with the JuMP
 
 read_output.py provides basic code to read the output point files and plot the heatmaps.
 
-The other files are sample outputs for the Fibonacci+1 permutation.
+The other files are sample outputs for the Fibonacci+1 permutation. The x array contains the sorted list of x-coordinates, the y-array the sorted list of y-coordinates and the a-matrix is the permutation that matches the x and y arrays to obtain the points. Be careful, (x[1],y[1]) is usually not a point.
