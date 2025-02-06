@@ -1,9 +1,9 @@
 using DelimitedFiles
 using JuMP
 using Gurobi
-Sparse = Model()
-set_optimizer(Sparse,Gurobi.Optimizer)
-set_optimizer_attribute(Sparse, "NonConvex", 2)
+Lstar = Model()
+set_optimizer(Lstar,Gurobi.Optimizer)
+set_optimizer_attribute(Lstar, "NonConvex", 2)
 
 #Change log path here
 #log_file_path = " "
@@ -27,7 +27,9 @@ show(output_file, JuMP.value.(z))
 write(output_file, "\n")
 close(output_file)
 end
-#set_optimizer_attribute(Sparse, "LogFile", log_file_path)
+#set_optimizer_attribute(Lstar, "LogFile", log_file_path)
+
+#Change the number of points here
 m =279
 epsi=0.00001
 
@@ -56,27 +58,27 @@ a[m+1,1]=1
 
 
 
-@variable(Sparse, 0.00001<=x[1:m+1]<=1)
-@variable(Sparse, 0.00001<=y[1:m+1]<=1)
+@variable(Lstar, 0.00001<=x[1:m+1]<=1)
+@variable(Lstar, 0.00001<=y[1:m+1]<=1)
 #a=readdlm("Per100_10000_Perm.txt")
-@variable(Sparse, z>=0)
-@constraint(Sparse, [i in 1:m, j in 1:m], 1/m* sum(a[u,v] for u in 1:i, v in 1:j) - x[i]*y[j] <= z + (2- sum(a[u,j] for u in 1:i)-sum(a[i,v] for v in 1:j)))
-@constraint(Sparse, [i in 1:m+1, j in 1:m+1], -1/m* sum(a[u,v] for u in 1:i-1, v in 1:j-1) + x[i]*y[j] <= z + (2- sum(a[u,j] for u in 1:i-1)-sum(a[i,v] for v in 1:j-1)))
-@constraint(Sparse, [i in 1:m-1], x[i+1] - x[i] >= epsi)
-@constraint(Sparse, [i in 1:m-1], y[i+1] - y[i] >= epsi)
-@constraint(Sparse, x[m+1] == 1)
-@constraint(Sparse, y[m+1] == 1)
-@constraint(Sparse, z>= 1/m)
-@constraint(Sparse, [i in 1:m-1, j in i+1:m,k in 1:m], x[j]-x[i] >= 1/m - (1-sum(a[i,u]-a[j,u] for u in 1:k)))
-@constraint(Sparse, [i in 1:m-1, j in i+1:m,k in 1:m], y[j]-y[i] >= 1/m - (1-sum(a[u,i]-a[u,j] for u in 1:k)))
-@constraint(Sparse, [i in 1:m], x[i] <= z + (i-1)/m)
-@constraint(Sparse, [i in 1:m], x[i] >= i/m -z)
-@constraint(Sparse, [i in 1:m], y[i] <= z + (i-1)/m)
-@constraint(Sparse, [i in 1:m], y[i] >= i/m -z)
-@objective(Sparse, Min, z)
-JuMP.set_optimizer_attribute(Sparse, "TimeLimit", solution_save_interval_secs)
-JuMP.optimize!(Sparse)
-term_status = JuMP.termination_status(Sparse)
+@variable(Lstar, z>=0)
+@constraint(Lstar, [i in 1:m, j in 1:m], 1/m* sum(a[u,v] for u in 1:i, v in 1:j) - x[i]*y[j] <= z + (2- sum(a[u,j] for u in 1:i)-sum(a[i,v] for v in 1:j)))
+@constraint(Lstar, [i in 1:m+1, j in 1:m+1], -1/m* sum(a[u,v] for u in 1:i-1, v in 1:j-1) + x[i]*y[j] <= z + (2- sum(a[u,j] for u in 1:i-1)-sum(a[i,v] for v in 1:j-1)))
+@constraint(Lstar, [i in 1:m-1], x[i+1] - x[i] >= epsi)
+@constraint(Lstar, [i in 1:m-1], y[i+1] - y[i] >= epsi)
+@constraint(Lstar, x[m+1] == 1)
+@constraint(Lstar, y[m+1] == 1)
+@constraint(Lstar, z>= 1/m)
+@constraint(Lstar, [i in 1:m-1, j in i+1:m,k in 1:m], x[j]-x[i] >= 1/m - (1-sum(a[i,u]-a[j,u] for u in 1:k)))
+@constraint(Lstar, [i in 1:m-1, j in i+1:m,k in 1:m], y[j]-y[i] >= 1/m - (1-sum(a[u,i]-a[u,j] for u in 1:k)))
+@constraint(Lstar, [i in 1:m], x[i] <= z + (i-1)/m)
+@constraint(Lstar, [i in 1:m], x[i] >= i/m -z)
+@constraint(Lstar, [i in 1:m], y[i] <= z + (i-1)/m)
+@constraint(Lstar, [i in 1:m], y[i] >= i/m -z)
+@objective(Lstar, Min, z)
+JuMP.set_optimizer_attribute(Lstar, "TimeLimit", solution_save_interval_secs)
+JuMP.optimize!(Lstar)
+term_status = JuMP.termination_status(Lstar)
 if term_status == MOI.OPTIMAL
 println("Optimal solution found!")
 save_solution_to_file(x, y, a,z, solution_file_path)
